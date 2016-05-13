@@ -1,2 +1,3 @@
 file3 touched locally
+add new line for conflict locally
 add new line remotely for conflict scenario
