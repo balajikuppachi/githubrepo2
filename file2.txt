@@ -1,1 +1,2 @@
 file2 added in branch2
+remote change for conflict
