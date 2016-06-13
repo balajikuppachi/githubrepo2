@@ -1,0 +1,23 @@
+echo --------------------------------------------
+echo Check SA Components Status for a given Server.
+echo ------------------------------------------------------------
+
+if test $# -lt 1
+then
+        echo "INVALID / NO Parameters.."
+        echo "Usage: ./checkSA.sh Instance"
+        echo  where:
+        echo       Instance = bala_dev / bala_sit / bala_qa / bala_uat / bala_prod
+        exit 1
+fi
+
+echo ------------------------------------------------------------------------------------------------
+echo Checking RegulatoryApp Component, will display the PIDs of Each instance
+echo ------------------------------------------------------------------------------------------------
+for proc in `/usr/bin/ps -ef | /usr/bin/grep BalaApp | /usr/bin/grep $1 | awk '{print $2  $11  $12  $13}'`;
+do
+    echo "BalaApp PID:" $proc ;
+done
+
+echo ------------------------------------------------------------------------------------------------
+
