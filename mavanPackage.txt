@@ -1,0 +1,9 @@
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+mvn archetype:generate -DgroupId=com.balaji.app -DartifactId=balaji-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+mvn package
+
+java -cp target/my-balaji-1.0-SNAPSHOT.jar com.balaji.app.App
+
+-------------------------------------------------------------------------------------------------------------------------------------------
