@@ -1,0 +1,22 @@
+------------------------------------------------------------------------------------------------------------------------------------------
+
+mvn archetype:generate -DgroupId=com.bala.droolsTest -DartifactId=DroolsTest-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+cd DroolsTest-app
+
+mvn package
+
+java -cp target\DroolsTest-app-1.0-SNAPSHOT.jar com.bala.droolsTest.App
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
+mvn archetype:generate -DgroupId=com.bala.ehCacheTest -DartifactId=EhCacheTest-app -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+cd EhCacheTest-app
+
+mvn package
+
+java -cp target\EhCacheTest-app-1.0-SNAPSHOT.jar com.bala.ehCacheTest.App
