@@ -1,0 +1,721 @@
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_START_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_START_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "06:00"
+box_success: s(1REG_PORTREC_REPORTING_ARCHIVE) & s(1REG_PORTREC_REPORTING_LIVE_TRADE_LOAD) & s(1REG_PORTREC_REPORTING_FX_INTL_LOAD)
+description: "Start of Portrec Process for Current Date"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ARCHIVE ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ARCHIVE   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_START_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileArchive_prod.script archive
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "Archive job for portrec"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_LIVE_TRADE_FILE_WATCHER ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_LIVE_TRADE_FILE_WATCHER   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_START_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_ARCHIVE)
+ description: "1REG DTCC file watcher for IR"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/LIVETRADES/live-trades.LiveTradeList_*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_LIVE_TRADE_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_LIVE_TRADE_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_START_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script live_trades
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_ARCHIVE) & s(1REG_PORTREC_REPORTING_LIVE_TRADE_FILE_WATCHER)
+ description: "Live Trade Load job for portrec"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_liveTrade_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_liveTrade_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_FX_INTL_FILE_WATCHER ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_FX_INTL_FILE_WATCHER   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_START_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ date_conditions: 1
+ days_of_week: mo, tu, we, th, fr
+ start_times: "07:00"
+ condition: s(1REG_PORTREC_REPORTING_ARCHIVE) & s(1REG_PORTREC_REPORTING_LIVE_TRADE_LOAD)
+ description: "1REG DTCC file watcher for IR"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/SRCFX/FX_PROD_RECON_*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_FX_INTL_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_FX_INTL_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_START_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script fx_intl
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_ARCHIVE) & s(1REG_PORTREC_REPORTING_FX_INTL_FILE_WATCHER)
+ description: "FX INTL Load job for portrec"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_fxIntl_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_fxIntl_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_DTCC_CR_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_DTCC_CR_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "07:00"
+box_success: s(1REG_PORTREC_REPORTING_DTCC_CR_LOAD)
+description: "Box for running CR DTCC-PORTREC Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_CR_FILE_WATCHER ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_CR_FILE_WATCHER   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_CR_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC file watcher for CR"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/CR/DTCC/ACK.312081.02501367_ENHPOS_*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_CR_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_CR_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_CR_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script dtcc_cr
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_DTCC_CR_FILE_WATCHER)
+ description: "SDR-PORTREC DTCC CR LOAD JOB"
+ job_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtcccr_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtcccr_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "07:00"
+box_success: s(1REG_PORTREC_REPORTING_DTCC_EQ_LOAD)
+description: "Box for running EQ DTCC-PORTREC Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_CFD_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_CFD_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ CFD file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501383_CFDENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_DS_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_DS_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ DS file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501936_DIVENPOS_*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_SP_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_SP_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ SP file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501934_STRENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_ES_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_ES_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ ES file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501558_EQUENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_VS_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_VS_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ VS file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501935_VARENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_OPT_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_OPT_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ OPT file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501916_OPTENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_PO_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_PO_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ OPT file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501933_PORENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_FWD_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_FWD_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC EQ OPT file watcher for EQ"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/EQ/DTCC/ACK.315977.02501561_FWDENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_EQ_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_EQ_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_EQ_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script dtcc_eq
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_DTCC_EQ_CFD_File_Watcher) & s(1REG_PORTREC_REPORTING_DTCC_EQ_DS_File_Watcher) & s(1REG_PORTREC_REPORTING_DTCC_EQ_SP_File_Watcher) & s(1REG_PORTREC_REPORTING_DTCC_EQ_ES_File_Watcher) & s(1REG_PORTREC_REPORTING_DTCC_EQ_VS_File_Watcher) & s(1REG_PORTREC_REPORTING_DTCC_EQ_OPT_File_Watcher) & s(1REG_PORTREC_REPORTING_DTCC_EQ_FWD_File_Watcher) & s(1REG_PORTREC_REPORTING_DTCC_EQ_PO_File_Watcher)
+ description: "SDR-PORTREC JOBS"
+ box_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtcceq_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtcceq_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_DTCC_IR_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_DTCC_IR_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "07:00"
+box_success: s(1REG_PORTREC_REPORTING_DTCC_IR_LOAD)
+description: "Box for running IR DTCC-PORTREC Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_IR_FILE_WATCHER ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_IR_FILE_WATCHER   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_IR_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC file watcher for IR"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/IR/DTCC/ACK.321960.2982187.RT_OPT_*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_IR_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_IR_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_IR_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script dtcc_ir
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_DTCC_IR_FILE_WATCHER)
+ description: "SDR-PORTREC DTC IR LOAD JOB"
+ job_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtccir_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtccir_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_NDM_INBOUND_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_NDM_INBOUND_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "05:10,06:10,07:10,08:10,09:10,10:10,11:10,12:10,13:10,14:10,15:10,16:10,17:10,18:10,19:10,20:10,21:10,22:10,23:10"
+box_success: s(1REG_PORTREC_REPORTING_NDM_INBOUND)
+description: "Box for running NDM inbound Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_NDM_INBOUND ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_NDM_INBOUND   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_NDM_INBOUND_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/PortrecNDMArchive.script prod
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "SDR JOBS for NDM"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_ndm_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_ndm_autosys.log
+ alarm_if_fail: 1
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_ARCHIVE_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_ARCHIVE_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "23:30"
+box_success: s(1REG_PORTREC_REPORTING_ARCHIVE_JOB) & s(1REG_PORTREC_LIVE_TRADE_JOB)
+description: "Box for running ARCHIVING Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ARCHIVE_JOB ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ARCHIVE_JOB   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_ARCHIVE_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileArchive_prod.script prod
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "SDR JOBS for ARCHIVING"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_autosys.log
+ alarm_if_fail: 1
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_LIVE_TRADE_JOB ----------------- */ 
+
+ insert_job: 1REG_PORTREC_LIVE_TRADE_JOB   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_ARCHIVE_BOX
+ command: /bfsreg/deploy/bfsreg/sdr_release/bin/jmxrun /bfsreg/deploy/bfsreg/sdr_release/bin/OpenTradeFileGenerator.jmx
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "SDR JOBS for LIVE Trade file generation"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_liveTrade_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_liveTrade_autosys.log
+ alarm_if_fail: 1
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_ALGO_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_ALGO_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "06:00"
+box_success: s(1REG_PORTREC_REPORTING_ALGO_ARCHIVE) & s(1REG_PORTREC_REPORTING_TRIOPTIMA_ARCHIVE)
+description: "Box for running NDM inbound Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ALGO_FILEWATCHER_INBOUND ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ALGO_FILEWATCHER_INBOUND   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_ALGO_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG Portrec Algo file watcher"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/ALGO/PortrecAlgoVal_*PROD.csv
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ALGO_INBOUND ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ALGO_INBOUND   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_ALGO_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script prod_algo
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_ALGO_FILEWATCHER_INBOUND)
+ description: "SDR JOBS for ALGO NDM"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_ndm_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_ndm_autosys.log
+ alarm_if_fail: 1
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_VAL_TRIOPTIMA_OUTBOUND ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_VAL_TRIOPTIMA_OUTBOUND   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_ALGO_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/PortrecNDMOutBound.script prod_trioptima
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_ALGO_FILEWATCHER_TRIOPTIMA)
+ description: "SDR JOBS for ALGO NDM"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_ndm_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_ndm_autosys.log
+ alarm_if_fail: 1
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ALGO_ARCHIVE ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ALGO_ARCHIVE   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_ALGO_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script archive_algo
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_VAL_TRIOPTIMA_OUTBOUND) & s(1REG_PORTREC_REPORTING_ALGO_INBOUND)
+ description: "SDR-PORTREC JOBS"
+ job_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_algo_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_algo_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_TRIOPTIMA_ARCHIVE ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_TRIOPTIMA_ARCHIVE   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_ALGO_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script archive_algo_trioptima
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ date_conditions: 1
+ days_of_week: mo, tu, we, th, fr
+ start_times: "11:00"
+ condition: s(1REG_PORTREC_REPORTING_ALGO_INBOUND)
+ description: "SDR-PORTREC JOBS"
+ job_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_algo_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_algo_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ALGO_FILEWATCHER_TRIOPTIMA ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ALGO_FILEWATCHER_TRIOPTIMA   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_ALGO_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_TRIOPTIMA_ARCHIVE)
+ description: "1REG Portrec Algo file watcher"
+ watch_file: /bfsreg/dataout/ALGOOUTBOUND/WF_non.collateralized_COB_*
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_COMM_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_COMM_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "07:00"
+box_success: s(1REG_PORTREC_REPORTING_DTCC_COMM_LOAD)
+description: "Box for running SDR-PORTREC Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ICE_COMM_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ICE_COMM_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_COMM_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG SRC file watcher for CR"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/COMMODITY/ICE/TVTrades*.csv
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_COMM_File_Watcher ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_COMM_File_Watcher   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_COMM_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC file watcher for COMM"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/COMMODITY/DTCC/ACK.315977.2501942_COMENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_ICE_COMM_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_ICE_COMM_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_COMM_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script ice_comm
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_ICE_COMM_File_Watcher)
+ description: "SDR-PORTREC JOBS"
+ box_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_icecomm_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_icecomm_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_COMM_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_COMM_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_COMM_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script dtcc_comm
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_DTCC_COMM_File_Watcher) & s(1REG_PORTREC_REPORTING_ICE_COMM_LOAD)
+ description: "SDR-PORTREC JOBS"
+ box_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtcccomm_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtcccomm_autosys.log
+ alarm_if_fail: 1
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_DTCC_FX_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_DTCC_FX_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "07:00"
+box_success: s(1REG_PORTREC_REPORTING_DTCC_FX_LOAD)
+description: "Box for running FX DTCC-PORTREC Jobs"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_FX_FILE_WATCHER ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_FX_FILE_WATCHER   job_type: f 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_FX_BOX
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "1REG DTCC file watcher for FX"
+ job_terminator: 1
+ watch_file: /bfsreg/datain/PORTREC_LOAD/FX/DTCC/ACK.315977.2501939_FXENPOS_.*.CSV
+ watch_interval: 60
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_DTCC_FX_LOAD ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_DTCC_FX_LOAD   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_DTCC_FX_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/ATSYSFileMove_prod.script dtcc_fx
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_DTCC_FX_FILE_WATCHER)
+ description: "SDR-PORTREC DTC FX LOAD JOB"
+ job_terminator: 1
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtccir_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_dtccir_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_REPORTING_DOCMENTUM_AR_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_REPORTING_DOCMENTUM_AR_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "09:15"
+description: "Box for running uploading TO files to Documentum"
+alarm_if_fail: 0
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_IR_ARCHIVE ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_IR_ARCHIVE   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_DOCMENTUM_AR_BOX
+ command: /bfsreg/deploy/bfsreg/sdr_release/bin/toArchiveFtp.script to_ir
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "Archive job for Trioptima IR"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_TO.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_TO.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_REPORTING_CR_ARCHIVE ----------------- */ 
+
+ insert_job: 1REG_PORTREC_REPORTING_CR_ARCHIVE   job_type: c 
+ box_name: 1REG_PORTREC_REPORTING_DOCMENTUM_AR_BOX
+ command: /bfsreg/deploy/bfsreg/sdr_release/bin/toArchiveFtp.script to_cr
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ condition: s(1REG_PORTREC_REPORTING_IR_ARCHIVE)
+ description: "Archive job for Trioptima CR"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_TO.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_TO.log
+ alarm_if_fail: 0
+ application: 1REG
+
+
+/* ----------------- 1REG_PORTREC_DATE_BOX ----------------- */ 
+
+insert_job: 1REG_PORTREC_DATE_BOX   job_type: b 
+owner: repuat
+permission: mx,me
+date_conditions: 1
+days_of_week: mo, tu, we, th, fr
+start_times: "20:00"
+description: "Create Batch date"
+alarm_if_fail: 1
+application: 1REG
+
+
+ /* ----------------- 1REG_PORTREC_CREATE_DATE ----------------- */ 
+
+ insert_job: 1REG_PORTREC_CREATE_DATE   job_type: c 
+ box_name: 1REG_PORTREC_DATE_BOX
+ command: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/bin/CreateBatchDate.script
+ machine: wupsa01a0014.financials.com
+ owner: repuat
+ permission: mx,me
+ description: "Archive job for portrec"
+ std_out_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_autosys.log
+ std_err_file: /bfsreg/deploy/bfsreg/UAT/REPORTING_portrec_release/logs/AUTOSYS/portrec_archive_autosys.log
+ alarm_if_fail: 0
+ application: 1REG
