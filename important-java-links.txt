@@ -1,0 +1,15 @@
+http://www.ehcache.org/documentation/2.8/code-samples.html
+
+http://www.ehcache.org/ehcache.xml
+
+http://www.ehcache.org/generated/2.9.0/html/ehc-all/#page/Ehcache_Documentation_Set%2Fco-store_storage_tiers.html%23
+
+http://www.mkyong.com/ehcache/ehcache-hello-world-example/
+
+http://www.mkyong.com/spring/maven-spring-hibernate-mysql-example/
+
+http://www.mkyong.com/spring/spring-caching-and-ehcache-example/
+
+http://www.tutorialspoint.com/restful/restful_environment.htm
+
+http://www.tutorialspoint.com/java/java_interview_questions.htm
